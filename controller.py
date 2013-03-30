@@ -65,6 +65,7 @@ def main(args):
          sensors = droid.readSensors().result
          sensors_str = json.dumps(sensors)
          data_fd.write(sensors_str)
+         data_fd.flush()
          telemetrySocket.sendto(sensors_str, (telemetryIP, telemetryPort))
          lastSensorRead = time.time()
 
