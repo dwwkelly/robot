@@ -1,8 +1,95 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+
+import android
+import time
+import socket
+import json
+import argparse
+import select
+import signal
+import sys
+import daemon
 
 
+def signal_handler(signal, frame):
+   print 'Exiting'
+   sys.exit(0)
 
 
+def getArgs():
+   parser = argparse.ArgumentParser(description=
+                                    'Setup Telemetry and Command System')
+
+   parser.add_argument('-p', '--sendPort', default=23000,
+                       help='Set the send port for telemetry')
+   parser.add_argument('-a', '--sendIP', default='192.168.1.255',
+                       help='Set the send port for telemetry')
+   parser.add_argument('-l', '--listenPort', default=23001,
+                       help='Set the send port for telemetry')
+   parser.add_argument('-i', '--interval', default=2000.0,
+                       help="Interval to read sensors in ms")
+   parser.add_argument('-d', '--daemon', default=False, action='store_true',
+                       help="Daemonize")
+
+   args = parser.parse_args()
+
+   return args
+
+
+def main(args):
+   signal.signal(signal.SIGINT, signal_handler)
+
+   # Setup command and control
+   commandPort = args.listenPort
+   commandSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+   commandSocket.bind(('', commandPort))
+   commandSocket.setblocking(0)
+
+   # Setup network telemetry
+   telemetryPort = args.sendPort
+   telemetrySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+   telemetryIP = args.sendIP
+   if telemetryIP == '192.168.1.255':
+      telemetrySocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+   interval = args.interval
+
+   # Setup file recording
+   data_fd = file('sensor_data.txt', 'w')
+
+   droid = android.Android(('dk-phone', 23514))
+
+   droid.startSensingTimed(1, 500)
+   lastSensorRead = 0.0
+   while(1):
+      if (time.time() - lastSensorRead) > (interval / 1000.0):
+         sensors = droid.readSensors().result
+         sensors_str = json.dumps(sensors)
+         data_fd.write(sensors_str)
+         telemetrySocket.sendto(sensors_str, (telemetryIP, telemetryPort))
+         lastSensorRead = time.time()
+
+      waitTime = (interval / 1000.0) - (time.time() - lastSensorRead)
+      (inputReady,
+       outputReady,
+       errReady) = select.select([commandSocket],
+                                 [],
+                                 [],
+                                 waitTime)
+
+      for sock in inputReady:
+         if sock == commandSocket:
+            msg, addr = commandSocket.recvfrom(4096)
+
+   else:
+      data_fd.close()
+
+   return
 
 if __name__ == '__main__':
-   main()
+   args = getArgs()
+
+   if args.daemon:
+      with daemon.DaemonContext():
+         main(args)
+   else:
+      main(args)
