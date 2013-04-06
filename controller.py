@@ -118,7 +118,7 @@ def issueCmd(msg, bus):
    if msg == '':
       return
 
-   msg = msg.split('')
+   msg = msg.split(' ')
    command = msg[0]
    options = msg[1:]
 
