@@ -60,12 +60,15 @@ def main(args):
    # Setup file recording
    data_fd = file('sensor_data.txt', 'w')
 
-   droid = android.Android(('dk-phone', 23514))
+   try:
+      droid = android.Android(('dk-phone', 23514))
+      droid.startSensingTimed(1, 500)
+   except:
+      droid = None
 
-   droid.startSensingTimed(1, 500)
    lastSensorRead = 0.0
    while(1):
-      if (time.time() - lastSensorRead) > (interval / 1000.0):
+      if (time.time() - lastSensorRead) > (interval / 1000.0) and droid:
          sensors = droid.readSensors().result
          sensors_str = json.dumps(sensors)
          data_fd.write(sensors_str)
