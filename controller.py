@@ -137,6 +137,7 @@ def setSpeed(speed, bus):
       motor_i2c.SetMotorSpeed(speedA, speedB, bus)
    except:
       print 'Failure setting speed'
+      print sys.exc_info()
 
 
 def setHeading(heading, bus):
