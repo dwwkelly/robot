@@ -82,6 +82,8 @@ def main(args):
          data_fd.flush()
          telemetrySocket.sendto(sensors_str, (telemetryIP, telemetryPort))
          lastSensorRead = time.time()
+      elif droid is None:
+         lastSensorRead = time.time()
 
       waitTime = (interval / 1000.0) - (time.time() - lastSensorRead)
       (inputReady,
