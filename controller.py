@@ -83,12 +83,10 @@ def main(args):
                                  [],
                                  [],
                                  waitTime)
-
+      msg = ''
       for sock in inputReady:
          if sock == commandSocket:
             msg, addr = commandSocket.recvfrom(4096)
-         else:
-            msg = ''
 
       issueCmd(msg, bus)
 
