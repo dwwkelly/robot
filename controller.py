@@ -31,6 +31,10 @@ def getArgs():
                        help="Interval to read sensors in ms")
    parser.add_argument('-d', '--daemon', default=False, action='store_true',
                        help="Daemonize")
+   parser.add_argument('-P', '--phone-ip', default='dk-phone',
+                       help="Set the IP of the phone")
+   parser.add_argument('--phone-port', default='23514',
+                       help="Set the port of the phone")
 
    args = parser.parse_args()
 
@@ -60,8 +64,11 @@ def main(args):
    # Setup file recording
    data_fd = file('sensor_data.txt', 'w')
 
+   # Setup phone
+   phoneIP = args.phone_ip
+   phonePort = args.phone_port
    try:
-      droid = android.Android(('dk-phone', 23514))
+      droid = android.Android((phoneIP, phonePort))
       droid.startSensingTimed(1, 500)
    except:
       droid = None
