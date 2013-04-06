@@ -9,6 +9,7 @@ import select
 import signal
 import sys
 import daemon
+import motor_i2c
 
 
 def signal_handler(signal, frame):
@@ -53,6 +54,9 @@ def main(args):
       telemetrySocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
    interval = args.interval
 
+   # Initialize Bus
+   bus = motor_i2c.setupSMBus()
+
    # Setup file recording
    data_fd = file('sensor_data.txt', 'w')
 
@@ -83,7 +87,7 @@ def main(args):
          else:
             msg = ''
 
-      issueCmd(msg)
+      issueCmd(msg, bus)
 
    else:
       data_fd.close()
@@ -91,8 +95,18 @@ def main(args):
    return
 
 
-def issueCmd(msg):
-   """ """
+def issueCmd(msg, bus):
+   """
+      message formats
+
+      COMMAND      Options
+
+      setSpeed     speedA speedB
+      setHeading   ?
+
+      Commands are space separated strings
+   """
+
    if msg == '':
       return
 
@@ -103,16 +117,21 @@ def issueCmd(msg):
    commands = {'setSpeed': setSpeed,
                'setHeading': setHeading}
 
-   result = commands[command](options)
+   result = commands[command](options, bus)
 
    return result
 
 
-def setSpeed(speed):
-   pass
+def setSpeed(speed, bus):
+   try:
+      speedA = int(speed[0])
+      speedB = int(speed[1])
+      motor_i2c.SetMotorSpeed(speedA, speedB, bus)
+   except:
+      print 'Failure setting speed'
 
 
-def setHeading(heading):
+def setHeading(heading, bus):
    pass
 
 
