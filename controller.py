@@ -80,11 +80,41 @@ def main(args):
       for sock in inputReady:
          if sock == commandSocket:
             msg, addr = commandSocket.recvfrom(4096)
+         else:
+            msg = ''
+
+      issueCmd(msg)
 
    else:
       data_fd.close()
 
    return
+
+
+def issueCmd(msg):
+   """ """
+   if msg == '':
+      return
+
+   msg = msg.split('')
+   command = msg[0]
+   options = msg[1:]
+
+   commands = {'setSpeed': setSpeed,
+               'setHeading': setHeading}
+
+   result = commands[command](options)
+
+   return result
+
+
+def setSpeed(speed):
+   pass
+
+
+def setHeading(heading):
+   pass
+
 
 if __name__ == '__main__':
    args = getArgs()
