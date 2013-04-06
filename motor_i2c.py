@@ -1,8 +1,15 @@
 import smbus
+import os
+import sys
 
 
 def setupSMBus(busNumber=0):
-   bus = smbus.SMBus(busNumber)
+   if os.getuid() != 0:
+      print 'must be root'
+      sys.exit(1)
+      bus = None
+   else:
+      bus = smbus.SMBus(busNumber)
    return bus
 
 
