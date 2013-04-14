@@ -19,7 +19,9 @@ def signal_handler(signal, frame):
 
 def getArgs():
    parser = argparse.ArgumentParser(description=
-                                    'Setup Telemetry and Command System')
+                                    'Setup Telemetry and Command System',
+                                    formatter_class=
+                                    argparse.ArgumentDefaultsHelpFormatter)
 
    parser.add_argument('-p', '--sendPort', default=23000,
                        help='Set the send port for telemetry')
