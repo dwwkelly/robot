@@ -1,2 +1,4 @@
 sensor_data.txt
 .ropeproject
+*.pyc
+*.o
